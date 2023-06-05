@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using SocketIOClient;
 using System;
+using UnityEngine.Events;
+using Define;
 
-public class Client : MonoBehaviour
+public class Client : MonoBehaviour, IManager
 {
+    private static Client instance;
     public static Client Instance {
         get{
             if(instance == null)
@@ -15,56 +18,41 @@ public class Client : MonoBehaviour
             return instance;
         }
     }
-    private static Client instance;
 
-    public event Action subscribeEvents = null;
-    private SocketIO socket;
+    private SocketIO socket = null;
+
+    [Header("유니티 이벤트")]
+    public UnityEvent<Exception> ErrorEvent = null;
     [SerializeField]string URL;
     [SerializeField]int port;
     //List<Player> players = new List<Player>();
-    [SerializeField] GameObject playerObj;
 
     private Queue<Action> buffer = new Queue<Action>();
     private Dictionary<string, GameObject> players = new Dictionary<string,GameObject>();
-
-    void Start()
+    public void JoinServer()
     {
-        socket = new SocketIO($"{URL}:{port}");
-        socket.On("connection", (data)=>{
-            Debug.Log(data);
-        });
-        socket.On("error", (data)=>
-        {
-            Debug.Log(data);
-        });
-        socket.On("exit", (data)=>
-        {
-            Debug.Log("플레이어 한명이 나가셨습니다");
-        });
-        socket.On("anthorEnter",(data)=>
-        {
-            buffer.Enqueue(()=>{
-                GameObject obj = Instantiate(playerObj);
-                players.Add(data.GetValue().ToString(),obj);
+        if(socket != null) return;
+        try{
+            socket = new SocketIO($"{URL}:{port}");
+            socket.On("connection", (data)=>{
+                Debug.Log(data);
             });
-        });
-        socket.On("move", (data)=>{
-            buffer.Enqueue(()=>{
-                TransformPaket t = JsonUtility.FromJson<TransformPaket>(data.GetValue().ToString());
-                players[t.id].transform.position = new Vector3(t.x,t.y,t.z);
-                players[t.id].transform.rotation = new Quaternion(t.rx,t.ry,t.rz,t.rw);
+            socket.On("error", (data)=>
+            {
+                Debug.Log(data);
             });
-        });
-
-        socket.ConnectAsync();
-        StartCoroutine(SendSubscribeEvents());
-    }
-    private IEnumerator SendSubscribeEvents()
-    {
-        while(true)
+            socket.On("message",(data)=>
+            {
+                Debug.Log(data.GetValue().ToString());
+                buffer.Enqueue(()=>((UIManager)GameManager.Instance.Managers[Define.Managers.UIManager]).ShowMessage(data.GetValue().ToString()));
+            });
+    
+            socket.ConnectAsync();
+        }
+        catch(Exception err)
         {
-            yield return new WaitForSeconds(1f/20f);
-            subscribeEvents?.Invoke();
+            Debug.LogException(err);
+            ErrorEvent?.Invoke(err);
         }
     }
     void Update()
@@ -75,7 +63,7 @@ public class Client : MonoBehaviour
         }
         if (Input.GetKeyDown(KeyCode.Q))
         {
-            SendData((int)Events.Intro,(int)IntroTypes.CreateRoom,"fucking socketio");
+            
         }
         if (Input.GetKeyDown(KeyCode.E))
         {
@@ -86,9 +74,13 @@ public class Client : MonoBehaviour
             buffer.Dequeue()?.Invoke();
         }
     }
+    public void CreateServer()
+    {
+        SendData((int)Events.Intro,(int)IntroTypes.CreateRoom,"fucking socketio");
+    }
     public void SendData(int events,int type, string value)
     {
-        Packet p =new Packet(events,type,JsonUtility.ToJson(new RoomPacket(value,10)));
+        Packet p =new Packet(events,type,value);
         Debug.Log(p);
         socket?.EmitAsync("message",JsonUtility.ToJson(p));
     } 
@@ -96,13 +88,17 @@ public class Client : MonoBehaviour
     {
         socket?.EmitAsync("message",JsonUtility.ToJson(data));
     }
+
+    public void Init(Transform parent)
+    {
+    }
 }
 
 
 public enum Events
 {
-    InGame =0,
     Intro,
+    InGame =0,
     Ending,
 }
 

@@ -1,15 +1,15 @@
 exports.Types = {
-    Room : 0,
-    GameManager : 1,
+    Intro : 0,
+    InGame : 1,
     Interact : 2,
     Chat : 3,
     Error : 4,
     ETC : 5,
 };
 
-exports.RoomEvents = {
+exports.Intro = {
     Create : 0,
-    Join : 1,
+    Enter : 1,
     Quit : 2,
     Remove : 3,
     OtherJoin : 4,

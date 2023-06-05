@@ -1,14 +1,16 @@
 {
   "name": "server",
   "version": "1.0.0",
-  "description": "",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "nodemon server"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "socket.io": "^4.6.1"
-  }
+    "nodemon": "^2.0.22",
+    "socket.io": "^4.6.2"
+  },
+  "devDependencies": {},
+  "description": ""
 }

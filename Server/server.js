@@ -1,11 +1,17 @@
-import { Server } from "socket.io";
+const SocketIo = require("socket.io");
 
-const io = new Server(3000);
+const Enums = require('./Enums/Enum.js');
+const Packet = require('./Classes/Packet.js');
 
-const rooms = [];
+const handlers = []; //handler list
+
+handlers[Enums.Types.Intro] = require('./Handler/IntroHandler.js').handler;
+
+const io = new SocketIo.Server(3000);
+
+console.log(3000,'포트에서 서버열림')
 io.on("connection", (socket) => {
     console.log('Client connected');
-    socket.emit('connection', {text : "서버열렸어요"});
     socket.on('message',(message) => {
         packet = JSON.parse(message);
         trigger = handlers[packet.e][packet.t];
