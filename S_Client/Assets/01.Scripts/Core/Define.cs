@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace  Define
+namespace  Core
 {
     
 public class Define
@@ -21,6 +21,10 @@ public enum Managers
     PoolManager = 0,
     Client = 1,
     UIManager = 2,
+}
+public enum StateType
+{
+    Normal = 0,
 }
 }
 

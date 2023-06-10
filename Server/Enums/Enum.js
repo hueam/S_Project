@@ -1,30 +1,28 @@
 exports.Types = {
     Intro : 0,
-    InGame : 1,
-    Interact : 2,
-    Chat : 3,
-    Error : 4,
-    ETC : 5,
+    Room :1,
+    InGame : 2,
+    Interact : 3,
+    Chat : 4,
+    Error : 5,
+    ETC : 6,
 };
 
 exports.Intro = {
     Create : 0,
     Enter : 1,
-    Quit : 2,
+    ChangeScene : 2,
     Remove : 3,
     OtherJoin : 4,
     Back2Lobby : 5,
     OtherQuit : 6,
 };
 
-exports.GameManagerEvents = {
-    MatchMakingStart : 0,
-    Ready : 1,
-    Start : 2,
-    SetStage : 3,
-    Fight : 4,
-    Finish : 5,
-    MatchMakingStop : 6,
+exports.Room = {
+    Ready : 0,
+    Start : 1,
+    ChangeScene : 2,
+    Move : 3,
 };
 
 exports.InteractEvents = {
@@ -39,4 +37,10 @@ exports.InteractEvents = {
 
 exports.ErrorEvents = {
     ErrorMessage : 0,
+}
+exports.SceneTypes = 
+{
+    Intro : 0,
+    Room : 1,
+    InGame : 2
 }

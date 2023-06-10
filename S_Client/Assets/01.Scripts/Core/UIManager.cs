@@ -1,6 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
-using Define;
+using Core;
 using UnityEngine;
 
 public class UIManager : MonoBehaviour,IManager
@@ -18,7 +18,8 @@ public class UIManager : MonoBehaviour,IManager
     {
         PopupText text = ((PoolManager)GameManager.Instance.Managers[Managers.PoolManager]).Pop("PopUpText") as PopupText;
         text.transform.parent = userUI.transform;
-        text.SetMessage(massage);
+        RectTransform rectTrm = userUI.GetComponent<RectTransform>();
+        text.SetMessage(massage,rectTrm.TransformPoint(rectTrm.rect.center));
     }
     
 }

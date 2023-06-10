@@ -6,8 +6,9 @@ handlers[Enums.Intro.Create] = (socket, data)=>
 {
     Room.Create(socket,data);
 }
-handlers[Enums.Intro.Join] = (socket, data)=> 
+handlers[Enums.Intro.Enter] = (socket, data)=> 
 {
-    Room.join(socket,data);
+    Room.Join(socket,data);
 }
+
 exports.handler = handlers;
