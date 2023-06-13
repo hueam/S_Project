@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Core;
 using UnityEngine;
 
 public class PlayerInput : MonoBehaviour
@@ -11,8 +12,9 @@ public class PlayerInput : MonoBehaviour
 
     private float rotateX = 0; 
     private float rotateY = 0; 
+    TransformPaket pakcet = new TransformPaket();
 
-    private void Update() {
+    protected virtual void Update() {
         MovementKeyPress();
         MouseMoveInput();
         JumpKeyInput();
@@ -22,6 +24,10 @@ public class PlayerInput : MonoBehaviour
     {
         if(Input.GetKeyDown(KeyCode.Space))
             jumpKeyPress?.Invoke();
+    }
+    protected void InvokeMoveInput(Vector3 dir)
+    {
+        movementInput?.Invoke(dir.normalized);
     }
 
     private void MouseMoveInput()
@@ -37,7 +43,6 @@ public class PlayerInput : MonoBehaviour
         float inputX = Input.GetAxisRaw("Horizontal");
         float inputY = Input.GetAxisRaw("Vertical");
         Vector3 dir = new Vector3(inputX,0,inputY);
-
         movementInput?.Invoke(dir.normalized);
     }
     

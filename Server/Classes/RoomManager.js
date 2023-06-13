@@ -22,6 +22,11 @@ class Room
     {
         if(Room.rooms[roomId] != undefined)
         {
+            if(Room.rooms[roomId].length == 6)
+            {
+                socket.emit("message","가득 찬 방입니다");
+                console.error("가득찬 방입니다");
+            }
             socket.emit("ChangeScene",Enums.SceneTypes.Room);
             socket.join(roomId);
             socket.roomId = roomId;
@@ -42,8 +47,9 @@ class Room
     }
     static Play(socket)
     {
-        socket.emit("ChangeScene",Enums.SceneTypes.InGame);
-        socket.to(socket.roomId).emit("ChangeScene",Enums.SceneTypes.InGame);
+        Room.rooms[socket.roomId].forEach(s => {
+            s.emit("ChangeScene",Enums.SceneTypes.InGame);
+        });
     }
     static Exit(socket)
     {

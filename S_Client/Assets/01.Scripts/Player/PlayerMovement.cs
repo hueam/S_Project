@@ -11,6 +11,8 @@ public class PlayerMovement : MonoBehaviour
     float speed, gravity= -9.8f, jumpPower;
     float movementY = 0;
     Vector3 inputVec;
+
+    public bool isMyClient;
      
     Transform eye;
     private void Awake() {
@@ -20,8 +22,8 @@ public class PlayerMovement : MonoBehaviour
     }
     private void SendTransform()
     {
-        TransformPaket pakcet = new TransformPaket(transform.position,transform.rotation);
-        ((Client)GameManager.Instance.Managers[Managers.Client]).SendData((int)Events.Room,(int)RoomTypes.Move,JsonUtility.ToJson(pakcet));
+        TransformPaket paket = new TransformPaket(transform.position,transform.rotation);
+        ((Client)GameManager.Instance.Managers[Managers.Client]).SendData((int)Events.Room,(int)RoomTypes.Move,JsonUtility.ToJson(paket));
     }
     private void FixedUpdate() {
         
@@ -31,10 +33,18 @@ public class PlayerMovement : MonoBehaviour
     private void CalculateMovement()
     {
         Vector3 moveVec = (inputVec.x * transform.right + inputVec.z * transform.forward).normalized * speed;
+
+        if(isMyClient == true)
+        {
+            SetYvelocity(ref moveVec);
+        }
+        characterController.Move(moveVec * Time.fixedDeltaTime);
+    }
+    private void SetYvelocity(ref Vector3 moveVec)
+    {
         if(CheckGround() == false)
             movementY += gravity* Time.fixedDeltaTime;
         moveVec.y = movementY;
-        characterController.Move(moveVec * Time.fixedDeltaTime);
     }
     [SerializeField]
     LayerMask whatIsLayer;

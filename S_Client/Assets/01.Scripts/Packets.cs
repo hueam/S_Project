@@ -65,3 +65,7 @@ public struct AttackPacket
     public int d;
     public string target;
 }
+public struct InitcharPacket{
+    public Vector3 v;
+    public Quaternion q;
+}

@@ -23,7 +23,12 @@ exports.Room = {
     Start : 1,
     ChangeScene : 2,
     Move : 3,
+    InitP : 4
 };
+exports.InGame = {
+    EnterP : 0,
+
+}
 
 exports.InteractEvents = {
     Damage : 0,

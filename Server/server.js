@@ -10,6 +10,7 @@ const handlers = []; //handler list
 
 handlers[Enums.Types.Intro] = require('./Handler/IntroHandler.js').handler;
 handlers[Enums.Types.Room] = require('./Handler/RoomHandler.js').handler;
+handlers[Enums.Types.InGame] = require('./Handler/InGameHandler.js').handler;
 
 
 io.on("connection", (socket) => {

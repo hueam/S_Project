@@ -19,5 +19,11 @@ handlers[Enums.Room.Move] = (socket,data)=>
     obj.id = socket.id
     socket.to(socket.roomId).emit("MoveOther",obj);
 }
+handlers[Enums.Room.InitP] = (socket,data)=>
+{
+    let obj = JSON.parse(data);
+    obj.id = socket.id
+    socket.to(socket.roomId).emit("InitP",obj);
+}
 
 exports.handler = handlers;

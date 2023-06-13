@@ -1,4 +1,4 @@
-    using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -15,6 +15,20 @@ public class GameManager : MonoBehaviour
         }
         return instance;
     }}
+
+    private Transform playerTrm = null;
+    public Transform PlayerTrm
+    {
+        get
+        {
+            if(playerTrm == null)
+            {
+                playerTrm = GameObject.FindGameObjectWithTag("Player").transform;
+            }
+            return playerTrm;
+        }
+    }
+
     public Dictionary<Managers,IManager> Managers = new Dictionary<Managers, IManager>();
     private IManager sceneController;
     public IManager SceneController{
@@ -30,6 +44,7 @@ public class GameManager : MonoBehaviour
         }
     }
     public bool IsLoad = false; 
+    public SceneTypes SceneEnum = SceneTypes.Intro;
     private void Awake() {
         DontDestroyOnLoad(this.gameObject);
         int managerCount = Enum.GetNames(typeof(Managers)).Length;
@@ -55,7 +70,8 @@ public class GameManager : MonoBehaviour
             yield return null;
         }
         IsLoad = false;
-        switch ((SceneTypes)sceneNum)
+        SceneEnum = (SceneTypes)sceneNum;
+        switch (SceneEnum)
         {
             case SceneTypes.Intro:
                 {
@@ -68,6 +84,8 @@ public class GameManager : MonoBehaviour
                 }
             case SceneTypes.InGame:
                 {
+                    GameObject obj = ((InGameManager)SceneController).SpawnPlayer(true);
+                    ((Client)Managers[Core.Managers.Client]).SendData((int)Events.InGame,(int)InGameTypes.EnterP,JsonUtility.ToJson(new TransformPaket(obj.transform.position,obj.transform.rotation)));
                     break;
                 }
         }
