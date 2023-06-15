@@ -76,6 +76,20 @@ public class RoomManager : MonoBehaviour, IManager
             }
         }
     }
+    public void OtherExit(bool isReady)
+    {
+        currentPeople += isReady ? 1 : -1;
+        maxPeople--;
+        peopleText.text = $"{currentPeople}/{maxPeople}";
+        if (currentPeople == maxPeople)
+        {
+            startBtn.interactable = true;
+        }
+        else if (currentPeople < maxPeople)
+        {
+            startBtn.interactable = false;
+        }
+    }
     public void OtherReady(bool isReady)
     {
         currentPeople += isReady ? 1 : -1;
@@ -89,9 +103,9 @@ public class RoomManager : MonoBehaviour, IManager
             startBtn.interactable = false;
         }
     }
-    public void GamePlay()
+    public void OnApplicationQuit() 
     {
 
-    }
+    }  
 
 }

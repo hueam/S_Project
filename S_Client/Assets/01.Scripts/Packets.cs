@@ -69,3 +69,13 @@ public struct InitcharPacket{
     public Vector3 v;
     public Quaternion q;
 }
+public struct DamagePacket
+{
+    public DamagePacket(string id, int damage)
+    {
+        this.id = id;
+        this.damage = damage;
+    }
+    public string id;
+    public int damage;
+}

@@ -27,7 +27,7 @@ exports.Room = {
 };
 exports.InGame = {
     EnterP : 0,
-
+    Hit : 1
 }
 
 exports.InteractEvents = {

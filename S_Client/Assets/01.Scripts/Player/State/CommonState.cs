@@ -15,7 +15,7 @@ public abstract class CommonState : MonoBehaviour, IState
 
     public virtual void SetUp(Transform agentRoot)
     {
-        _animator = agentRoot.Find("Visual").GetComponent<AgentAnimator>();
+        _animator = GameObject.Find("OverLayCam/Arm").GetComponent<AgentAnimator>();
         _agentInput = agentRoot.GetComponent<PlayerInput>();
         _agentController = agentRoot.GetComponent<AgentController>();
         _agentMovement = agentRoot.GetComponent<PlayerMovement>();

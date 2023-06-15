@@ -11,8 +11,22 @@ public class OtherPlayer : MonoBehaviour
     Quaternion deltaQua = Quaternion.identity;
     Quaternion beforeQua = Quaternion.identity;
 
+    AgentAnimator agentAnimator;
 
+    public string socketID;
 
+    [SerializeField]
+    Transform pivot;
+    private PlayerHealth playerHealth;
+    public PlayerHealth PlayerHealthCompo => playerHealth;
+
+    private void Awake()
+    {
+        playerHealth = GetComponent<PlayerHealth>();
+        agentAnimator = transform.Find("Visual").GetComponent<AgentAnimator>();
+        pivot = transform.Find("pivot");
+        playerHealth.Init();
+    }
     private void Start() {
         beforePos = transform.position;
         beforeQua = transform.rotation;
@@ -20,12 +34,20 @@ public class OtherPlayer : MonoBehaviour
     }
     private void Update()
     {
-        offSetVec += (deltaPos*Time.deltaTime)*5;
-        transform.position = offSetVec;
-        Quaternion q=transform.rotation;
-        q.eulerAngles += deltaQua.eulerAngles*Time.deltaTime;
-        transform.rotation = q;
+        agentAnimator.SetFloatInputX((beforeQua * deltaPos).x);
+        agentAnimator.SetFloatInputY((beforeQua * deltaPos).z);
         
+        offSetVec += (deltaPos*Time.deltaTime)*5;
+        agentAnimator.SetFloatSpeed(offSetVec.normalized.sqrMagnitude);
+        transform.position = offSetVec;
+        Vector3 q=transform.rotation.eulerAngles;
+        q.y += deltaQua.eulerAngles.y*Time.deltaTime;
+        transform.rotation = Quaternion.Euler(q);
+
+
+        q=pivot.localRotation.eulerAngles;
+        q.x += deltaQua.eulerAngles.x*Time.deltaTime;
+        pivot.localRotation = Quaternion.Euler(q);
     }
     public void SetVelocity(Vector3 Vec,Quaternion quaternion)
     {
@@ -36,4 +58,5 @@ public class OtherPlayer : MonoBehaviour
         transform.rotation = quaternion;
         beforeQua = quaternion;
     }
+        
 }

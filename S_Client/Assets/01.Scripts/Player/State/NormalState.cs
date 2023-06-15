@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class NormalState : CommonState
 {
-    //protected AgentMovement _agentMovement;
+    private bool IsReLoad;
 
     public override void OnEnterState()
     {
@@ -14,6 +14,9 @@ public class NormalState : CommonState
         _agentInput.movementInput += OnMovementHandle;
         _agentInput.mouseMove += OnMouseMovehandle;
         _agentInput.jumpKeyPress += OnJumpHandle;
+        _agentInput.fireKeyPress += OnFireHandle;
+        _agentInput.ReloadKeyPresss += OnReloadHandle;
+        _animator.animationEvnet += AnimationEventTrigger;
     }
 
 
@@ -23,8 +26,39 @@ public class NormalState : CommonState
         _agentInput.movementInput -= OnMovementHandle;
         _agentInput.mouseMove -= OnMouseMovehandle;
         _agentInput.jumpKeyPress -= OnJumpHandle;
+        _agentInput.fireKeyPress -= OnFireHandle;
+        _agentInput.ReloadKeyPresss -= OnReloadHandle;
+        _animator.animationEvnet -= AnimationEventTrigger;
+    }
+    private void OnReloadHandle()
+    {
+         _animator.SetTriggerReload(true);
+        _animator.SetBoolReload(true);
+        IsReLoad = true;
+    }
+    private void AnimationEventTrigger()
+    {
+        _animator.SetBoolReload(false);
+        _agentController.currentGun.Reload();
     }
 
+    private void OnFireHandle()
+    {
+        if(IsReLoad == true){
+            _animator.SetBoolReload(false);
+            IsReLoad = false;
+        }    
+        else if(IsReLoad == false)
+        {
+            if(_agentController.currentGun.Fire() == false) 
+            {
+                IsReLoad = true;
+                _animator.SetTriggerReload(true);
+                _animator.SetBoolReload(true);
+            }
+        }
+       
+    }
     private void OnJumpHandle()
     {
         _agentMovement?.Jump();

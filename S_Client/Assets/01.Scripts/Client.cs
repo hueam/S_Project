@@ -53,26 +53,30 @@ public class Client : MonoBehaviour, IManager
                buffer.Enqueue(()=>{
                     if(players.ContainsKey(data.GetValue().ToString()))
                     {
-                        players[data.GetValue().ToString()] = ((InGameManager)GameManager.Instance.SceneController).SpawnPlayer(false).GetComponent<OtherPlayer>();
+                        OtherPlayer otherPlayer = ((InGameManager)GameManager.Instance.SceneController).SpawnPlayer(false).GetComponent<OtherPlayer>();
+                        otherPlayer.socketID = data.GetValue().ToString();
+                        players[data.GetValue().ToString()] = otherPlayer;
                     }
                     else
                     {
-                        players.Add(data.GetValue().ToString(),((RoomManager)GameManager.Instance.SceneController).SpawnPlayer(false).GetComponent<OtherPlayer>());
+                        OtherPlayer otherPlayer = ((RoomManager)GameManager.Instance.SceneController).SpawnPlayer(false).GetComponent<OtherPlayer>();
+                        otherPlayer.socketID = data.GetValue().ToString();
+                        players.Add(data.GetValue().ToString(),otherPlayer);
                     }
-                    Transform ptrm = GameManager.Instance.PlayerTrm;
-                    SendData((int)Events.Room,(int)RoomTypes.InitP,JsonUtility.ToJson(new TransformPaket(ptrm.position,ptrm.rotation)));
                  });
+            });
+            socket.On("otherDamage",(data)=>
+            {   
+                buffer.Enqueue(()=>{
+                DamagePacket packet = JsonUtility.FromJson<DamagePacket>(data.GetValue().ToString());
+                if(players.ContainsKey(packet.id))
+                    players[packet.id].PlayerHealthCompo.HitDamage(packet.damage);
+                else Define.Player.PlayerHealthCompo.HitDamage(packet.damage);
+                });
             });
             socket.On("error", (data)=>
             {
                 Debug.Log(data);
-            });
-            socket.On("InitP",(data)=>{
-                buffer.Enqueue(()=>{
-                    TransformPaket packet = data.GetValue<TransformPaket>();
-                    players[packet.id].transform.position = new Vector3(packet.x, packet.y, packet.z);
-                    players[packet.id].transform.rotation = new Quaternion(packet.rx, packet.ry, packet.rz, packet.rw);
-                });
             });
             socket.On("ChangeScene", (data)=>
             {
@@ -85,19 +89,18 @@ public class Client : MonoBehaviour, IManager
             });
             socket.On("MoveOther",(data)=>
             {
-                buffer.Enqueue(()=>{
-                    TransformPaket paket = JsonUtility.FromJson<TransformPaket>(data.GetValue().ToString());
-                    if(players.ContainsKey(paket.id)&&(players[paket.id] != null))
-                        players[paket.id].SetVelocity(new Vector3(paket.x,paket.y,paket.z),new Quaternion(paket.rx,paket.ry,paket.rz,paket.rw));
-                });
+                TransformPaket paket = JsonUtility.FromJson<TransformPaket>(data.GetValue().ToString());
+                if(players.ContainsKey(paket.id)){
+                    buffer.Enqueue(() =>
+                    {
+                        if (players.ContainsKey(paket.id) && (players[paket.id] != null))
+                            players[paket.id].SetVelocity(new Vector3(paket.x, paket.y, paket.z), new Quaternion(paket.rx, paket.ry, paket.rz, paket.rw));
+                    });
+                }
             });
             socket.On("otherReady",data=>
             {
                 buffer.Enqueue(()=>((RoomManager)GameManager.Instance.SceneController).OtherReady(bool.Parse(data.GetValue().ToString())));
-            });
-            socket.On("Play",(data)=>
-            {
-                ((RoomManager)GameManager.Instance.SceneController).GamePlay();
             });
             socket.On("message",(data)=>
             {
@@ -106,12 +109,10 @@ public class Client : MonoBehaviour, IManager
             });
             socket.ConnectAsync();
             StartCoroutine(CheckServer());
-            Debug.Log(Time.time);
     }
     public IEnumerator CheckServer()
     {
         yield return new WaitForSeconds(0.5f);
-        Debug.Log(12);
         try
         {
             if(IsConnect == false)
@@ -143,7 +144,6 @@ public class Client : MonoBehaviour, IManager
             return;
         if(buffer.Count > 0&& GameManager.Instance.IsLoad == false)
         {
-            Debug.Log(1);
             buffer.Dequeue()?.Invoke();
         }
     }
@@ -198,7 +198,9 @@ public enum IntroTypes
 public enum InGameTypes
 {
     EnterP = 0,
-
+    Hit = 1,
+    Die = 2,
+    ReSapwn = 3,
 }
 public enum SceneTypes
 {

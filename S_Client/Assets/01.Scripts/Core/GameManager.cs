@@ -79,12 +79,15 @@ public class GameManager : MonoBehaviour
                 }
             case SceneTypes.Room:
                 {
-                    ((RoomManager)SceneController).SpawnPlayer(true);
+                    AgentController a = ((RoomManager)SceneController).SpawnPlayer(true).GetComponent<AgentController>();
+                    a.CanAttack = false;
                     break;
                 }
             case SceneTypes.InGame:
                 {
                     GameObject obj = ((InGameManager)SceneController).SpawnPlayer(true);
+                    AgentController a = obj.GetComponent<AgentController>();
+                    a.CanAttack = true;
                     ((Client)Managers[Core.Managers.Client]).SendData((int)Events.InGame,(int)InGameTypes.EnterP,JsonUtility.ToJson(new TransformPaket(obj.transform.position,obj.transform.rotation)));
                     break;
                 }

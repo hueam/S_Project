@@ -9,10 +9,14 @@ public class AgentController : MonoBehaviour
     private Dictionary<StateType, IState> _stateDictionary = null;  //������ �ִ� ���µ� ����
     private IState _currentState; //���� ���� ����
 
-    public String CurrentState;
+    public String CurrentState; 
+
+    public Gun currentGun;
 
     public PlayerMovement PlayerMovementCompo { get; private set; }
+    public PlayerHealth PlayerHealthCompo {get; private set; }
     public bool IsDead{get; private set;}
+    public bool CanAttack;
 
     public void SetDead()
     {
@@ -38,12 +42,17 @@ public class AgentController : MonoBehaviour
         }
 
         PlayerMovementCompo = GetComponent<PlayerMovement>();
-
+        PlayerHealthCompo = GetComponent<PlayerHealth>();
+        PlayerHealthCompo.Init();
+        
     }
-
 
     private void Start()
     {
+        if(CanAttack == true)
+        {
+            currentGun.Init();
+        }
         ChangeState(StateType.Normal);
     }
 

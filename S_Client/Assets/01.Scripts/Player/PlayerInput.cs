@@ -9,6 +9,8 @@ public class PlayerInput : MonoBehaviour
     public event Action<Vector3> movementInput;
     public event Action<Vector2> mouseMove;
     public event Action jumpKeyPress;
+    public event Action fireKeyPress;
+    public event Action ReloadKeyPresss;
 
     private float rotateX = 0; 
     private float rotateY = 0; 
@@ -18,8 +20,22 @@ public class PlayerInput : MonoBehaviour
         MovementKeyPress();
         MouseMoveInput();
         JumpKeyInput();
+        FireKeyPress();
+        ReloadKeyPresssHandle();
+    }
+    private void ReloadKeyPresssHandle()
+    {
+        if(Input.GetKeyDown(KeyCode.R))
+            ReloadKeyPresss?.Invoke();
     }
 
+    private void FireKeyPress()
+    {
+        if(Input.GetMouseButton(0))
+        {
+            fireKeyPress?.Invoke();
+        }
+    }
     private void JumpKeyInput()
     {
         if(Input.GetKeyDown(KeyCode.Space))

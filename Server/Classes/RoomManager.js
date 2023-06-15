@@ -27,11 +27,11 @@ class Room
                 socket.emit("message","가득 찬 방입니다");
                 console.error("가득찬 방입니다");
             }
-            socket.emit("ChangeScene",Enums.SceneTypes.Room);
             socket.join(roomId);
             socket.roomId = roomId;
             socket.IsReady = false;
             socket.to(roomId).emit('enterOther',socket.id);
+            socket.emit("ChangeScene",Enums.SceneTypes.Room);
             Room.rooms[roomId].forEach(s => {
                 socket.emit('enterOther',s.id);
                 console.log(s.IsReady == true);

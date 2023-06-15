@@ -7,17 +7,20 @@ using UnityEngine;
 public class PlayerMovement : MonoBehaviour
 {
     CharacterController characterController;
+    AgentAnimator animator;
     [SerializeField]
     float speed, gravity= -9.8f, jumpPower;
     float movementY = 0;
     Vector3 inputVec;
+    bool isJumping;
 
     public bool isMyClient;
      
+    [SerializeField]
     Transform eye;
     private void Awake() {
         characterController = GetComponent<CharacterController>();
-        eye = transform.Find("Visual/Eye");
+        animator = transform.Find("Visual").GetComponent<AgentAnimator>();
         ((Client)GameManager.Instance.Managers[Managers.Client]).alwayEvnet += SendTransform;
     }
     private void SendTransform()
@@ -32,25 +35,35 @@ public class PlayerMovement : MonoBehaviour
 
     private void CalculateMovement()
     {
-        Vector3 moveVec = (inputVec.x * transform.right + inputVec.z * transform.forward).normalized * speed;
-
-        if(isMyClient == true)
+        animator?.SetFloatSpeed(inputVec.sqrMagnitude);
+        if(inputVec.sqrMagnitude>0)
         {
-            SetYvelocity(ref moveVec);
+            animator?.SetFloatInputX(inputVec.x);
+            animator?.SetFloatInputY(inputVec.z);
         }
+        Vector3 moveVec = (inputVec.x * transform.right + inputVec.z * transform.forward).normalized * speed;
+        
+
+        SetYvelocity(ref moveVec);
+
         characterController.Move(moveVec * Time.fixedDeltaTime);
     }
     private void SetYvelocity(ref Vector3 moveVec)
     {
-        if(CheckGround() == false)
+        if(CheckGround(out RaycastHit hit) == false){
             movementY += gravity* Time.fixedDeltaTime;
+        }
+        else if(isJumping == false) movementY = 0;
+        else isJumping = false;
         moveVec.y = movementY;
     }
     [SerializeField]
     LayerMask whatIsLayer;
-    public bool CheckGround()
+    public bool CheckGround(out RaycastHit hit)
     {
-        return Physics.Raycast(transform.position,Vector3.down,0.1f,whatIsLayer);;
+        Vector3 p1 = transform.position + characterController.center + Vector3.up * -characterController.height * 0.25F;
+        Vector3 p2 = p1 + Vector3.up * characterController.height+ Vector3.up * -characterController.height * 0.25F;
+        return Physics.CapsuleCast(p1,p2,characterController.radius,Vector3.down,out hit,0.1f,whatIsLayer);
     }
 
     public void SetMovementVelocity(Vector3 dir)
@@ -68,7 +81,11 @@ public class PlayerMovement : MonoBehaviour
     }
     public void Jump()
     {
-        movementY = jumpPower;
+        if(CheckGround(out RaycastHit hit))
+        {
+            isJumping = true;
+            movementY = jumpPower;
+        }
     }
     private void OnDestroy() {
         ((Client)GameManager.Instance.Managers[Managers.Client]).alwayEvnet -= SendTransform;

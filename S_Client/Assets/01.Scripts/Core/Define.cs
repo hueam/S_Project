@@ -7,14 +7,24 @@ namespace  Core
     
 public class Define
 {
-    private Transform playerTrm = null;
-    public Transform PlayerTrm {get{
-        if(playerTrm = null)
+    private static AgentController player = null;
+    public static AgentController Player {get{
+        if(player == null)
         {
-            playerTrm = GameObject.FindGameObjectWithTag("Player").transform;
+            player = GameObject.FindGameObjectWithTag("Player").GetComponent<AgentController>();
         }
-        return playerTrm;
+        return player;
     }}
+    private static Camera mainCam = null;
+    public static Camera MainCam {
+        get{
+            if(mainCam == null)
+            {
+                mainCam = Camera.main;
+            }
+            return mainCam;
+        }
+    }
 }   
 public enum Managers
 {
