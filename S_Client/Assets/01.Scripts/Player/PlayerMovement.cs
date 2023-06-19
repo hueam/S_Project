@@ -8,31 +8,40 @@ public class PlayerMovement : MonoBehaviour
 {
     CharacterController characterController;
     AgentAnimator animator;
+    AgentController agentController;
+
     [SerializeField]
     float speed, gravity= -9.8f, jumpPower;
     float movementY = 0;
     Vector3 inputVec;
     bool isJumping;
 
-    public bool isMyClient;
      
     [SerializeField]
     Transform eye;
     private void Awake() {
         characterController = GetComponent<CharacterController>();
         animator = transform.Find("Visual").GetComponent<AgentAnimator>();
+        agentController = GetComponent<AgentController>();
+    }
+    private void Start() {
         ((Client)GameManager.Instance.Managers[Managers.Client]).alwayEvnet += SendTransform;
     }
-    private void SendTransform()
+    public void SendTransform()
     {
-        TransformPaket paket = new TransformPaket(transform.position,transform.rotation);
+        TransformPaket paket = new TransformPaket(transform.position,eye.rotation);
         ((Client)GameManager.Instance.Managers[Managers.Client]).SendData((int)Events.Room,(int)RoomTypes.Move,JsonUtility.ToJson(paket));
     }
     private void FixedUpdate() {
-        
-        CalculateMovement();
+        if(agentController.IsDead == false)
+            CalculateMovement();
+        else DieMove();
     }
-
+    public void DieMove()
+    {
+        
+        characterController.Move((Define.MainCam.transform.forward*inputVec.z)*speed*Time.fixedDeltaTime);
+    }
     private void CalculateMovement()
     {
         animator?.SetFloatSpeed(inputVec.sqrMagnitude);
@@ -87,7 +96,8 @@ public class PlayerMovement : MonoBehaviour
             movementY = jumpPower;
         }
     }
-    private void OnDestroy() {
-        ((Client)GameManager.Instance.Managers[Managers.Client]).alwayEvnet -= SendTransform;
+    void OnApplicationQuit()
+    {
+        //나갈때 코드 제대로 써라
     }
 }

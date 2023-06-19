@@ -47,7 +47,6 @@ public struct Packet
         e = eventType;
         t = type;
         v = value; 
-
     }
     public int e;
     public int t;
@@ -56,6 +55,19 @@ public struct Packet
     {
         return $"{e},{t},{v}";
     }
+}
+public struct Vec3Packet
+{
+    public Vec3Packet(Vector3 pos){
+        x = pos.x;
+        y = pos.y;
+        z = pos.z; 
+        id ="";
+    }
+    public float x;
+    public float y;
+    public float z;
+    public string id;
 }
 
 [System.Serializable]

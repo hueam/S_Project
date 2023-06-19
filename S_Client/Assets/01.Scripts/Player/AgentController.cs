@@ -3,20 +3,22 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 
 public class AgentController : MonoBehaviour
 {
     private Dictionary<StateType, IState> _stateDictionary = null;  //������ �ִ� ���µ� ����
     private IState _currentState; //���� ���� ����
 
-    public String CurrentState; 
+    public StateType CurrentState; 
 
     public Gun currentGun;
 
+    public Camera overlayCam;
+
     public PlayerMovement PlayerMovementCompo { get; private set; }
     public PlayerHealth PlayerHealthCompo {get; private set; }
-    public bool IsDead{get; private set;}
-    public bool CanAttack;
+    public bool IsDead;
 
     public void SetDead()
     {
@@ -42,16 +44,20 @@ public class AgentController : MonoBehaviour
         }
 
         PlayerMovementCompo = GetComponent<PlayerMovement>();
-        PlayerHealthCompo = GetComponent<PlayerHealth>();
-        PlayerHealthCompo.Init();
-        
+        if(GameManager.Instance.SceneEnum == SceneTypes.InGame)
+        {
+            PlayerHealthCompo = GetComponent<PlayerHealth>();
+            PlayerHealthCompo.Init(true);
+        }
+        var cameraData = Define.MainCam.GetUniversalAdditionalCameraData();
+        cameraData.cameraStack.Add(overlayCam);
     }
 
     private void Start()
     {
-        if(CanAttack == true)
+        if(GameManager.Instance.SceneEnum == SceneTypes.InGame)
         {
-            currentGun.Init();
+            currentGun.Init(transform);
         }
         ChangeState(StateType.Normal);
     }
@@ -65,7 +71,6 @@ public class AgentController : MonoBehaviour
 
     private void Update()
     {
-        if(IsDead) return;
         _currentState?.UpdateState();
     }
 }

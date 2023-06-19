@@ -48,10 +48,18 @@ public abstract class Gun : MonoBehaviour
     }
 
     protected bool isFire;
-    public virtual void Init()
+    [SerializeField]
+    protected Transform parent;
+    protected PlayerInput agentInput;
+    public virtual void Init(Transform root)
     {
+        parent = root;
         isFire = true;
+        agentInput = root.GetComponent<PlayerInput>();
     }
     public abstract bool Fire();
     public abstract void Reload(); 
+    [SerializeField]
+    protected float recoilX = 5,recoilY = 5; 
+
 }

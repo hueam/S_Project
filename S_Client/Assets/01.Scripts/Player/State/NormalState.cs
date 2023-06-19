@@ -32,9 +32,12 @@ public class NormalState : CommonState
     }
     private void OnReloadHandle()
     {
-         _animator.SetTriggerReload(true);
-        _animator.SetBoolReload(true);
-        IsReLoad = true;
+        if(GameManager.Instance.SceneEnum == SceneTypes.InGame)
+        {
+            _animator.SetTriggerReload(true);
+            _animator.SetBoolReload(true);
+            IsReLoad = true;
+        }
     }
     private void AnimationEventTrigger()
     {
@@ -44,20 +47,23 @@ public class NormalState : CommonState
 
     private void OnFireHandle()
     {
-        if(IsReLoad == true){
-            _animator.SetBoolReload(false);
-            IsReLoad = false;
-        }    
-        else if(IsReLoad == false)
+        if(GameManager.Instance.SceneEnum == SceneTypes.InGame)
         {
-            if(_agentController.currentGun.Fire() == false) 
+            if (IsReLoad == true)
             {
-                IsReLoad = true;
-                _animator.SetTriggerReload(true);
-                _animator.SetBoolReload(true);
+                _animator.SetBoolReload(false);
+                IsReLoad = false;
+            }
+            else if (IsReLoad == false)
+            {
+                if (_agentController.currentGun.Fire() == false)
+                {
+                    IsReLoad = true;
+                    _animator.SetTriggerReload(true);
+                    _animator.SetBoolReload(true);
+                }
             }
         }
-       
     }
     private void OnJumpHandle()
     {

@@ -2,10 +2,7 @@ exports.Types = {
     Intro : 0,
     Room :1,
     InGame : 2,
-    Interact : 3,
-    Chat : 4,
-    Error : 5,
-    ETC : 6,
+    Ending : 3,
 };
 
 exports.Intro = {
@@ -27,25 +24,20 @@ exports.Room = {
 };
 exports.InGame = {
     EnterP : 0,
-    Hit : 1
+    Hit : 1,
+    Die : 2,
+    ReSpawn :3,
+    Ending : 4,
+    Fire : 5,
 }
 
-exports.InteractEvents = {
-    Damage : 0,
-    PlayerMove : 1,
-    Spawn : 2,
-    BoolAnim : 3,
-    Ride : 4,
-    TriggerAnim : 5,
-    Fire : 6,
-};
-
-exports.ErrorEvents = {
-    ErrorMessage : 0,
-}
 exports.SceneTypes = 
 {
     Intro : 0,
     Room : 1,
-    InGame : 2
+    InGame : 2,
+    Ending : 3,
+}
+exports.EndingEvnet = {
+    GotoIntro : 0,
 }

@@ -43,7 +43,7 @@ public class PlayerInput : MonoBehaviour
     }
     protected void InvokeMoveInput(Vector3 dir)
     {
-        movementInput?.Invoke(dir.normalized);
+        movementInput?.Invoke(dir);
     }
 
     private void MouseMoveInput()
@@ -51,6 +51,15 @@ public class PlayerInput : MonoBehaviour
         rotateX += Input.GetAxis("Mouse X");
         rotateX = (rotateX > 360) ? rotateX % 360 : rotateX; 
         rotateY += Input.GetAxis("Mouse Y");
+        rotateY = Mathf.Clamp(rotateY,-67,67);
+        mouseMove?.Invoke(new Vector2(rotateX,rotateY));
+    }
+    public void AddForce(float x, float y)
+    {
+        rotateX += x;
+        rotateX = (rotateX > 360) ? rotateX % 360 : rotateX; 
+        rotateY += y;
+        rotateY = Mathf.Clamp(rotateY,-67,67);
         mouseMove?.Invoke(new Vector2(rotateX,rotateY));
     }
 

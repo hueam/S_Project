@@ -1,9 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Core;
 using UnityEngine;
 
-public class IntroManager : MonoBehaviour
+public class IntroManager : MonoBehaviour,IManager
 {
     [SerializeField]
     List<Gate> gates = new List<Gate>();
@@ -56,5 +57,10 @@ public class IntroManager : MonoBehaviour
     public void GameEnd()
     {
         StartCoroutine(DelayCor(1f,Application.Quit));
+    }
+
+    public void Init(Transform parent)
+    {
+        ((UIManager)GameManager.Instance.Managers[Managers.UIManager]).SetMainUi();
     }
 }

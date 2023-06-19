@@ -24,6 +24,7 @@ public class RoomManager : MonoBehaviour, IManager
     {
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+       ((UIManager)GameManager.Instance.Managers[Managers.UIManager]).SetMainUi();
     }
     public GameObject SpawnPlayer(bool isMy = true)
     {

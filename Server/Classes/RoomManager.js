@@ -54,19 +54,24 @@ class Room
     static Exit(socket)
     {
         try{
-        if(socket.roomId != undefined)
+        if(socket?.roomId != undefined)
         {
-            let eventName = "";
-            Room.rooms[socket.roomId].splice(Room.rooms[socket.roomId].indexOf(socket.id),1);
+            Room.rooms[socket.roomId][socket] == undefined;
             if(Room.rooms[socket.roomId].length < 2)
             {
-                Room.rooms.splice(Room.rooms.indexOf(socket.roomId),1);  
-                socket.to(socket.roomId).emit("deleteRoom",null);
+                Room.rooms[socket.roomId] = undefined;  
+                socket.to(socket.roomId).emit("exitOther",socket.id);
+                Room.rooms[socket.roomId].Foreach(s=>
+                {
+                        s.leave(s.roomId);
+                })
+                socket.to(socket.roomId).emit("ChangeScene",Enums.SceneTypes.Intro);
             }
             else
             {
-                socket.to(socket.roomId).emit("deleteRoom",null);
+                socket.to(socket.roomId).emit("exitOther",socket.id);
             }
+            socket.leave(socket.roomId);
         }
         }
         catch(e)

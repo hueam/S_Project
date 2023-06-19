@@ -1,62 +1,99 @@
 using System.Collections;
 using System.Collections.Generic;
+using Core;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class OtherPlayer : MonoBehaviour
 {
-    Vector3 deltaPos = Vector3.zero;
     Vector3 beforePos = Vector3.zero;
-    Vector3 offSetVec = Vector3.zero;
     
     Quaternion deltaQua = Quaternion.identity;
     Quaternion beforeQua = Quaternion.identity;
 
     AgentAnimator agentAnimator;
 
+    private float maxHP = 50f;
+    public float currentHP;
+
     public string socketID;
+
+    float lastTime;
+
+    private bool IsDead = false; 
 
     [SerializeField]
     Transform pivot;
-    private PlayerHealth playerHealth;
-    public PlayerHealth PlayerHealthCompo => playerHealth;
+    [SerializeField]
+    Transform visual;
+    [SerializeField]
+    CharacterController characterController;
+    [SerializeField]
+    Transform firePos;
+    [SerializeField]
+    BulletLine bulletLine;
 
+    [SerializeField]
+    public UnityEvent FireEvent; 
+
+    private float acceleration = 0;
+    private float beforeTime;
     private void Awake()
     {
-        playerHealth = GetComponent<PlayerHealth>();
-        agentAnimator = transform.Find("Visual").GetComponent<AgentAnimator>();
-        pivot = transform.Find("pivot");
-        playerHealth.Init();
+        IsDead = true;
+        visual = transform.Find("Visual");
+        agentAnimator = visual.GetComponent<AgentAnimator>();
+        currentHP = maxHP;
     }
     private void Start() {
         beforePos = transform.position;
         beforeQua = transform.rotation;
-        offSetVec = transform.position;
+        beforeTime = Time.time;
     }
-    private void Update()
-    {
-        agentAnimator.SetFloatInputX((beforeQua * deltaPos).x);
-        agentAnimator.SetFloatInputY((beforeQua * deltaPos).z);
-        
-        offSetVec += (deltaPos*Time.deltaTime)*5;
-        agentAnimator.SetFloatSpeed(offSetVec.normalized.sqrMagnitude);
-        transform.position = offSetVec;
-        Vector3 q=transform.rotation.eulerAngles;
-        q.y += deltaQua.eulerAngles.y*Time.deltaTime;
-        transform.rotation = Quaternion.Euler(q);
-
-
-        q=pivot.localRotation.eulerAngles;
-        q.x += deltaQua.eulerAngles.x*Time.deltaTime;
-        pivot.localRotation = Quaternion.Euler(q);
+    private void Update() {
+        if(IsDead == false)return;
+        transform.position = Vector3.Lerp(transform.position,beforePos,0.5f);            
+        transform.rotation = Quaternion.Slerp(transform.rotation,beforeQua,0.5f);            
+        agentAnimator?.SetFloatSpeed(Mathf.Abs(acceleration));
     }
     public void SetVelocity(Vector3 Vec,Quaternion quaternion)
     {
-        deltaPos = Vec-transform.position;
-        deltaQua.eulerAngles = beforeQua.eulerAngles - quaternion.eulerAngles;
-        transform.position = Vec;
+        float deltaTime = Time.time - beforeTime;
+        acceleration = (Vec.magnitude - beforePos.magnitude)/deltaTime;
         beforePos = Vec;
-        transform.rotation = quaternion;
         beforeQua = quaternion;
+        beforeTime = Time.time;
+    }
+    public void SetDie()
+    {
+        IsDead = false;
+        characterController.enabled = false;
+        visual.gameObject.SetActive(false);
+    }
+    public void ReSapwn(Vector3 pos, Quaternion rot)
+    {
+        currentHP = maxHP;
+        transform.position = pos;
+        transform.rotation = rot;
+        IsDead = true;
+        characterController.enabled = true;
+        visual.gameObject.SetActive(true);
+        beforePos = transform.position;
+        beforeQua = transform.rotation;
+    }
+    public bool HitDamage(int damage)
+    {
+        if(IsDead == false) return false;
+        currentHP -= damage;
+        ((Client)GameManager.Instance.Managers[Managers.Client]).SendData((int)Events.InGame, (int)InGameTypes.Hit, JsonUtility.ToJson(new DamagePacket(socketID, damage)));
+        return currentHP <= 0;            
+    }
+    public void Fire(Vector3 endPos)
+    {
+        FireEvent?.Invoke();
+        BulletLine line = Instantiate(bulletLine.gameObject,Vector3.zero,Quaternion.identity).GetComponent<BulletLine>();
+        line.SetLine(firePos.position,endPos);
+
     }
         
 }

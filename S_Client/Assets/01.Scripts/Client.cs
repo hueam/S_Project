@@ -8,18 +8,7 @@ using Core;
 
 public class Client : MonoBehaviour, IManager
 {
-    private static Client instance;
-    public static Client Instance {
-        get{
-            if(instance == null)
-            {
-                instance = FindObjectOfType<Client>();
-            }
-            return instance;
-        }
-    }
-
-    private SocketIO socket = null;
+    public SocketIO socket = null;
 
     [Header("유니티 이벤트")]
     public UnityEvent ErrorEvent = null;
@@ -32,7 +21,7 @@ public class Client : MonoBehaviour, IManager
     private Queue<Action> buffer = new Queue<Action>();
     private Dictionary<string, OtherPlayer> players = new Dictionary<string,OtherPlayer>();
     public event Action alwayEvnet = null;
-    public void JoinServer()
+    async void JoinServer()
     {
         if(socket != null) return;
         
@@ -45,7 +34,7 @@ public class Client : MonoBehaviour, IManager
                 buffer.Enqueue(()=>{
                     IsConnect = bool.Parse(data.GetValue().ToString());
                     Debug.Log(IsConnect);
-                }
+                }   
                 );
             });
             socket.On("enterOther",(data)=>
@@ -53,13 +42,21 @@ public class Client : MonoBehaviour, IManager
                buffer.Enqueue(()=>{
                     if(players.ContainsKey(data.GetValue().ToString()))
                     {
-                        OtherPlayer otherPlayer = ((InGameManager)GameManager.Instance.SceneController).SpawnPlayer(false).GetComponent<OtherPlayer>();
+                        OtherPlayer otherPlayer;
+                        if(GameManager.Instance.SceneEnum == SceneTypes.Room)
+                           otherPlayer =((RoomManager)GameManager.Instance.SceneController).SpawnPlayer(false).GetComponent<OtherPlayer>();
+                        else
+                           otherPlayer = ((InGameManager)GameManager.Instance.SceneController).SpawnPlayer(false).GetComponent<OtherPlayer>();
                         otherPlayer.socketID = data.GetValue().ToString();
                         players[data.GetValue().ToString()] = otherPlayer;
                     }
                     else
                     {
-                        OtherPlayer otherPlayer = ((RoomManager)GameManager.Instance.SceneController).SpawnPlayer(false).GetComponent<OtherPlayer>();
+                        OtherPlayer otherPlayer;
+                        if(GameManager.Instance.SceneEnum == SceneTypes.Room)
+                           otherPlayer =((RoomManager)GameManager.Instance.SceneController).SpawnPlayer(false).GetComponent<OtherPlayer>();
+                        else
+                           otherPlayer = ((InGameManager)GameManager.Instance.SceneController).SpawnPlayer(false).GetComponent<OtherPlayer>();
                         otherPlayer.socketID = data.GetValue().ToString();
                         players.Add(data.GetValue().ToString(),otherPlayer);
                     }
@@ -70,8 +67,27 @@ public class Client : MonoBehaviour, IManager
                 buffer.Enqueue(()=>{
                 DamagePacket packet = JsonUtility.FromJson<DamagePacket>(data.GetValue().ToString());
                 if(players.ContainsKey(packet.id))
-                    players[packet.id].PlayerHealthCompo.HitDamage(packet.damage);
+                    players[packet.id].currentHP -= packet.damage;
                 else Define.Player.PlayerHealthCompo.HitDamage(packet.damage);
+                });
+            });
+            socket.On("otherDie",(data)=>
+            {
+                string id = data.GetValue().ToString();
+                buffer.Enqueue(() =>
+                {
+                    if (players.ContainsKey(id))
+                        players[id].SetDie();
+                });
+            });
+            socket.On("exitOther",(data)=>
+            {
+                buffer.Enqueue(()=>{
+                    if((int)GameManager.Instance.SceneEnum > 0)
+                    {
+                        Destroy(players[data.GetValue().ToString()].gameObject);
+                        players.Remove(data.GetValue().ToString());
+                    }
                 });
             });
             socket.On("error", (data)=>
@@ -87,9 +103,16 @@ public class Client : MonoBehaviour, IManager
                     
                 });
             });
+            socket.On("Fire",data => {
+                Vec3Packet p = JsonUtility.FromJson<Vec3Packet>(data.GetValue().ToString());
+                buffer.Enqueue(()=>{
+                    players[p.id].Fire(new Vector3(p.x,p.y,p.z));
+                });
+            });
             socket.On("MoveOther",(data)=>
             {
                 TransformPaket paket = JsonUtility.FromJson<TransformPaket>(data.GetValue().ToString());
+                Debug.Log("움직임");
                 if(players.ContainsKey(paket.id)){
                     buffer.Enqueue(() =>
                     {
@@ -102,27 +125,27 @@ public class Client : MonoBehaviour, IManager
             {
                 buffer.Enqueue(()=>((RoomManager)GameManager.Instance.SceneController).OtherReady(bool.Parse(data.GetValue().ToString())));
             });
+            socket.On("otherReSapwn",data=>
+            {
+                TransformPaket p = JsonUtility.FromJson<TransformPaket>(data.GetValue().ToString());
+                buffer.Enqueue(()=>players[p.id].ReSapwn(new Vector3(p.x,p.y,p.y),new Quaternion(p.rx,p.ry,p.rz,p.rw)));
+            });
             socket.On("message",(data)=>
             {
                 Debug.Log(data.GetValue().ToString());
                 buffer.Enqueue(()=>((UIManager)GameManager.Instance.Managers[Managers.UIManager]).ShowMessage(data.GetValue().ToString()));
             });
-            socket.ConnectAsync();
-            StartCoroutine(CheckServer());
-    }
-    public IEnumerator CheckServer()
-    {
-        yield return new WaitForSeconds(0.5f);
+            await socket.ConnectAsync();
         try
         {
-            if(IsConnect == false)
+            if (IsConnect == false)
             {
                 ((UIManager)GameManager.Instance.Managers[Managers.UIManager]).ShowMessage("서버 접속 실패!");
 
                 throw new Exception("접속하지못하였음");
             }
         }
-        catch(Exception err)
+        catch (Exception err)
         {
             Debug.LogException(err);
             ErrorEvent?.Invoke();
@@ -165,9 +188,16 @@ public class Client : MonoBehaviour, IManager
     {
         socket?.EmitAsync("message",JsonUtility.ToJson(data));
     }
+    public void envetClear()
+    {
+        alwayEvnet = null;
+    }
 
     public void Init(Transform parent)
     {
+    }
+    private void OnApplicationQuit() {
+        socket?.EmitAsync("disconnect");
     }
 }
 
@@ -177,6 +207,7 @@ public enum Events
     Intro = 0,
     Room = 1,
     InGame = 2,
+    Ending = 3,
 }
 
 public enum RoomTypes
@@ -201,17 +232,17 @@ public enum InGameTypes
     Hit = 1,
     Die = 2,
     ReSapwn = 3,
+    Ending = 4,
+    Fire = 5,
 }
 public enum SceneTypes
 {
     Intro = 0,
     Room = 1,
     InGame = 2,
-
+    Ending = 3,
 }
-
-public enum AlwayEventType
+public enum EndingTypes
 {
-    Transform = 0,
-
+    Goto = 0,
 }

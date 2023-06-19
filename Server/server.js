@@ -11,11 +11,12 @@ const handlers = []; //handler list
 handlers[Enums.Types.Intro] = require('./Handler/IntroHandler.js').handler;
 handlers[Enums.Types.Room] = require('./Handler/RoomHandler.js').handler;
 handlers[Enums.Types.InGame] = require('./Handler/InGameHandler.js').handler;
+handlers[Enums.Types.Ending] = require('./Handler/EndingHandle.js').handler;
 
 
 io.on("connection", (socket) => {
     socket.emit('connection',true);
-    console.log('Client connected');
+    console.log(socket.id);
     socket.on('message',(message) => {
         packet = JSON.parse(message);
         trigger = handlers[packet.e][packet.t];
@@ -23,7 +24,8 @@ io.on("connection", (socket) => {
             trigger(socket,packet.v);
     });
     socket.on('disconnect', function () {
-        // Room.Exit();
+        console.log("한명나감");
+        Room.Exit();
     });
 });
 server.listen(3000, () => {

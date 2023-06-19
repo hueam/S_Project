@@ -1,10 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Linq;
 
 public class BulletLine : MonoBehaviour
 {
-    [SerializeField]float endTime = 5f;
     LineRenderer lineRenderer;
     public void SetLine(Vector3 gunPos,Vector3 hitPos)
     {
@@ -15,9 +15,11 @@ public class BulletLine : MonoBehaviour
     }
     private IEnumerator DisappearSmoke(Vector3 gunPos,Vector3 hitPos)
     {
-        Vector3 deltaPos = hitPos - gunPos;
-        while(Vector3.Distance(hitPos,gunPos)>0.5){
-            gunPos += deltaPos.normalized*Time.deltaTime*50; 
+        Vector3 dir = hitPos - gunPos;
+        while(Vector3.Distance(gunPos,hitPos) > 0.1f&&(hitPos-gunPos).normalized == dir.normalized)
+        {
+
+            gunPos += dir.normalized * Time.deltaTime * 50f;
             lineRenderer.SetPosition(0,gunPos);
             yield return null;
         }

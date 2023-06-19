@@ -21,5 +21,9 @@ public class UIManager : MonoBehaviour,IManager
         RectTransform rectTrm = userUI.GetComponent<RectTransform>();
         text.SetMessage(massage,rectTrm.TransformPoint(rectTrm.rect.center));
     }
+    public void SetDiePanel(bool b)
+    {
+        userUI.transform.Find("Die").gameObject.SetActive(b);
+    }
     
 }

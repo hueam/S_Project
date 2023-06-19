@@ -16,18 +16,6 @@ public class GameManager : MonoBehaviour
         return instance;
     }}
 
-    private Transform playerTrm = null;
-    public Transform PlayerTrm
-    {
-        get
-        {
-            if(playerTrm == null)
-            {
-                playerTrm = GameObject.FindGameObjectWithTag("Player").transform;
-            }
-            return playerTrm;
-        }
-    }
 
     public Dictionary<Managers,IManager> Managers = new Dictionary<Managers, IManager>();
     private IManager sceneController;
@@ -45,7 +33,22 @@ public class GameManager : MonoBehaviour
     }
     public bool IsLoad = false; 
     public SceneTypes SceneEnum = SceneTypes.Intro;
+
+    private int winPoint = 0;
+    public int WinPoint{
+        get => winPoint;
+        set {
+            if(SceneEnum == SceneTypes.InGame)
+            {
+                winPoint = value;
+                ((InGameManager)SceneController).SetScoreText(winPoint);
+                if(winPoint == 20)
+                    ((Client)Managers[Core.Managers.Client]).SendData((int)Events.InGame,(int)InGameTypes.Ending,"");
+            }
+        }
+    }
     private void Awake() {
+        if(instance != null) Destroy(this.gameObject);
         DontDestroyOnLoad(this.gameObject);
         int managerCount = Enum.GetNames(typeof(Managers)).Length;
         for(int i = 0; i < managerCount; i++)
@@ -60,11 +63,18 @@ public class GameManager : MonoBehaviour
         StartCoroutine(LoadSceneCor(scnenNum));
         
     }
+    private void Update() {
+        if(Input.GetKeyDown(KeyCode.T))
+        {
+            WinPoint++;
+        }
+    }
     private IEnumerator LoadSceneCor(int sceneNum)
     {
         IsLoad = true;
         AsyncOperation async = SceneManager.LoadSceneAsync(Enum.GetName(typeof(SceneTypes),sceneNum));
         sceneController = null;
+        ((Client)Managers[Core.Managers.Client]).envetClear();
         while(!async.isDone)
         {
             yield return null;
@@ -80,17 +90,22 @@ public class GameManager : MonoBehaviour
             case SceneTypes.Room:
                 {
                     AgentController a = ((RoomManager)SceneController).SpawnPlayer(true).GetComponent<AgentController>();
-                    a.CanAttack = false;
                     break;
                 }
             case SceneTypes.InGame:
                 {
                     GameObject obj = ((InGameManager)SceneController).SpawnPlayer(true);
                     AgentController a = obj.GetComponent<AgentController>();
-                    a.CanAttack = true;
                     ((Client)Managers[Core.Managers.Client]).SendData((int)Events.InGame,(int)InGameTypes.EnterP,JsonUtility.ToJson(new TransformPaket(obj.transform.position,obj.transform.rotation)));
+                    WinPoint = 0;
+                    break;
+                }
+            case SceneTypes.Ending:
+                {
+                    ((EndingManager)SceneController).SetWin(winPoint >= 20);
                     break;
                 }
         }
     }
+    
 }

@@ -35,6 +35,7 @@ public enum Managers
 public enum StateType
 {
     Normal = 0,
+    Die = 1,
 }
 }
 

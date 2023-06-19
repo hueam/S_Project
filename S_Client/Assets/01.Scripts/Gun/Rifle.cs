@@ -2,15 +2,18 @@ using System.Collections;
 using System.Collections.Generic;
 using Core;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class Rifle : Gun
 {
+    public UnityEvent fireEvnet;
     public override bool Fire()
     {
         if (CurrentAmmo > 0)
         {
             if (isFire == true)
             {
+                agentInput.AddForce(Random.Range(-recoilX,recoilX),recoilY);
                 BulletLine bl = Instantiate(bulletLine, Vector3.zero, Quaternion.identity);
                 StartCoroutine(DelayCor(shotDelay));
                 Ray ray = Define.MainCam.ScreenPointToRay(Input.mousePosition);
@@ -19,10 +22,19 @@ public class Rifle : Gun
                 {
                     if (hit.transform.TryGetComponent<OtherPlayer>(out OtherPlayer player))
                     {
-                        player.PlayerHealthCompo.HitDamage(damage);
-                        ((Client)GameManager.Instance.Managers[Managers.Client]).SendData((int)Events.InGame, (int)InGameTypes.Hit, JsonUtility.ToJson(new DamagePacket(player.socketID, damage)));
+                        if(player.HitDamage(damage))
+                        {
+                            GameManager.Instance.WinPoint++;
+                        }
                     }
                 }
+                else
+                {
+                    hit.point = (Define.MainCam.transform.forward * 1000f);
+                }
+                if(GameManager.Instance.SceneEnum == SceneTypes.InGame)
+                    fireEvnet?.Invoke();
+                ((Client)GameManager.Instance.Managers[Core.Managers.Client]).SendData((int)Events.InGame,(int)InGameTypes.Fire,JsonUtility.ToJson(new Vec3Packet(hit.point)));
                 bl.SetLine(firePos.position, hit.point);
                 CurrentAmmo--;
             }
@@ -35,6 +47,7 @@ public class Rifle : Gun
             return false;
         }
     }
+    
     private IEnumerator DelayCor(float delay)
     {
         isFire = false;
@@ -42,9 +55,9 @@ public class Rifle : Gun
         isFire = true;
     }
 
-    public override void Init()
+    public override void Init(Transform root)
     {
-        base.Init();
+        base.Init(root);
         firePos = transform.Find("firePos");
         CurrentAmmo = MaxAmmo = 30;
     }
