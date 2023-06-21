@@ -6186,6 +6186,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0636b8af485a2304193f0cd50e111b82, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  roomID: 
   IsLoad: 0
   SceneEnum: 0
 --- !u!4 &1909377499

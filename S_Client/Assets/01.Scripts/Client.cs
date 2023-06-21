@@ -172,10 +172,12 @@ public class Client : MonoBehaviour, IManager
     }
     public void CreateRoom(string roomID)
     {
+        GameManager.Instance.roomID = roomID;
         SendData((int)Events.Intro,(int)IntroTypes.CreateRoom,roomID);
     }
     public void JoinRoom(string roomID)
     {
+        GameManager.Instance.roomID = roomID;
         SendData((int)Events.Intro,(int)IntroTypes.EnterRoom,roomID);
     }
     public void SendData(int events,int type, string value)
@@ -191,6 +193,10 @@ public class Client : MonoBehaviour, IManager
     public void envetClear()
     {
         alwayEvnet = null;
+    }
+    public void ExitGame()
+    {
+        socket.EmitAsync("disconnect");
     }
 
     public void Init(Transform parent)

@@ -11,6 +11,7 @@ public class PlayerInput : MonoBehaviour
     public event Action jumpKeyPress;
     public event Action fireKeyPress;
     public event Action ReloadKeyPresss;
+    public event Action<bool> ZoomKeyPress;
 
     private float rotateX = 0; 
     private float rotateY = 0; 
@@ -22,7 +23,15 @@ public class PlayerInput : MonoBehaviour
         JumpKeyInput();
         FireKeyPress();
         ReloadKeyPresssHandle();
+        ZoomKeyInput();
     }
+
+    private void ZoomKeyInput()
+    {
+        bool isPress = Input.GetMouseButton(1);
+        ZoomKeyPress?.Invoke(isPress);
+    }
+
     private void ReloadKeyPresssHandle()
     {
         if(Input.GetKeyDown(KeyCode.R))

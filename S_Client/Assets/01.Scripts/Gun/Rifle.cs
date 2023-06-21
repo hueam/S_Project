@@ -7,6 +7,7 @@ using UnityEngine.Events;
 public class Rifle : Gun
 {
     public UnityEvent fireEvnet;
+    public Transform ZoomFirePos;
     public override bool Fire()
     {
         if (CurrentAmmo > 0)
@@ -35,7 +36,12 @@ public class Rifle : Gun
                 if(GameManager.Instance.SceneEnum == SceneTypes.InGame)
                     fireEvnet?.Invoke();
                 ((Client)GameManager.Instance.Managers[Core.Managers.Client]).SendData((int)Events.InGame,(int)InGameTypes.Fire,JsonUtility.ToJson(new Vec3Packet(hit.point)));
-                bl.SetLine(firePos.position, hit.point);
+                if(Input.GetMouseButton(1))
+                {
+                    bl.SetLine(ZoomFirePos.position, hit.point);
+                }
+                else
+                    bl.SetLine(FirePos.position, hit.point);
                 CurrentAmmo--;
             }
             return true;

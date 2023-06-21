@@ -56,16 +56,17 @@ class Room
         try{
         if(socket?.roomId != undefined)
         {
-            Room.rooms[socket.roomId][socket] == undefined;
+            const index = Room.rooms[socket.roomId].indexOf(socket);
+            Room.rooms[socket.roomId].splice(index,1);
+            console.log(Room.rooms[socket.roomId]);
             if(Room.rooms[socket.roomId].length < 2)
             {
-                Room.rooms[socket.roomId] = undefined;  
                 socket.to(socket.roomId).emit("exitOther",socket.id);
-                Room.rooms[socket.roomId].Foreach(s=>
-                {
-                        s.leave(s.roomId);
+                Room.rooms[socket.roomId].forEach(s => {
+                    s.leave(s.roomId);
+                    s.emit("ChangeScene",Enums.SceneTypes.Intro);
                 })
-                socket.to(socket.roomId).emit("ChangeScene",Enums.SceneTypes.Intro);
+                Room.rooms[socket.roomId] = undefined;  
             }
             else
             {

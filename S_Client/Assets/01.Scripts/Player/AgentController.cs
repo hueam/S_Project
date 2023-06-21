@@ -15,6 +15,7 @@ public class AgentController : MonoBehaviour
     public Gun currentGun;
 
     public Camera overlayCam;
+    public Transform CamZoomTrm;
 
     public PlayerMovement PlayerMovementCompo { get; private set; }
     public PlayerHealth PlayerHealthCompo {get; private set; }

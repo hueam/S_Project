@@ -12,6 +12,8 @@ public class IntroManager : MonoBehaviour,IManager
     Gate currentGate = null;
     int currentIdx = 0;
     private void Awake() {
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
         foreach(var gate in gates)
         {
             gate.Init();

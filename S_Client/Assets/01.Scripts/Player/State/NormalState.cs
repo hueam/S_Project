@@ -1,3 +1,4 @@
+using Cinemachine;
 using Core;
 using System;
 using System.Collections;
@@ -7,6 +8,7 @@ using UnityEngine;
 public class NormalState : CommonState
 {
     private bool IsReLoad;
+    public CinemachineVirtualCamera vCam;
 
     public override void OnEnterState()
     {
@@ -17,6 +19,7 @@ public class NormalState : CommonState
         _agentInput.fireKeyPress += OnFireHandle;
         _agentInput.ReloadKeyPresss += OnReloadHandle;
         _animator.animationEvnet += AnimationEventTrigger;
+        _agentInput.ZoomKeyPress += OnZoomHandle;
     }
 
 
@@ -29,6 +32,7 @@ public class NormalState : CommonState
         _agentInput.fireKeyPress -= OnFireHandle;
         _agentInput.ReloadKeyPresss -= OnReloadHandle;
         _animator.animationEvnet -= AnimationEventTrigger;
+        _agentInput.ZoomKeyPress -= OnZoomHandle;
     }
     private void OnReloadHandle()
     {
@@ -64,6 +68,17 @@ public class NormalState : CommonState
                 }
             }
         }
+    }
+    float percent = 0;
+    private void OnZoomHandle(bool isPress)
+    {
+        percent += isPress ? Time.deltaTime*5 : -Time.deltaTime*5;
+        percent = Mathf.Clamp(percent, 0, 1);
+        _agentController.overlayCam.transform.localPosition = Vector3.Lerp(Vector3.zero, _agentController.CamZoomTrm.localPosition,percent);
+        _agentController.overlayCam.transform.localRotation = Quaternion.Lerp(Quaternion.identity, _agentController.CamZoomTrm.localRotation,percent);
+        _agentController.overlayCam.fieldOfView = Mathf.Lerp(60f,25f,percent);
+        vCam.m_Lens.FieldOfView = Mathf.Lerp(60f,25f,percent);
+
     }
     private void OnJumpHandle()
     {

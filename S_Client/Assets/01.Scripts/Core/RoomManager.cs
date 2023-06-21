@@ -13,6 +13,7 @@ public class RoomManager : MonoBehaviour, IManager
     [SerializeField] GameObject otherPlayerPrefab;
     [SerializeField] Button readyBtn, startBtn;
     [SerializeField] TextMeshProUGUI peopleText;
+    [SerializeField] TextMeshProUGUI roomIDTxt;
     [SerializeField] GraphicRaycaster m_Raycaster;
     PointerEventData m_PointerEventData;
 
@@ -24,7 +25,9 @@ public class RoomManager : MonoBehaviour, IManager
     {
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
-       ((UIManager)GameManager.Instance.Managers[Managers.UIManager]).SetMainUi();
+
+        ((UIManager)GameManager.Instance.Managers[Managers.UIManager]).SetMainUi();
+        roomIDTxt.text = GameManager.Instance.roomID;
     }
     public GameObject SpawnPlayer(bool isMy = true)
     {
@@ -32,7 +35,7 @@ public class RoomManager : MonoBehaviour, IManager
         peopleText.text = $"{currentPeople}/{maxPeople}";
         if (currentPeople < maxPeople)
         {
-            startBtn.interactable = false;
+            startBtn.gameObject.SetActive(false);
         }
         return Instantiate(isMy ? playerPrefab : otherPlayerPrefab, spawnTrm.position, Quaternion.identity);
     }
@@ -42,15 +45,17 @@ public class RoomManager : MonoBehaviour, IManager
         peopleText.text = $"{currentPeople}/{maxPeople}";
         if (currentPeople == maxPeople)
         {
-            startBtn.interactable = true;
+            startBtn.gameObject.SetActive(true);
+
         }
         else if (currentPeople < maxPeople)
         {
-            startBtn.interactable = false;
+            startBtn.gameObject.SetActive(false);
+
         }
         readyBtn.image.color = isReady ? Color.red : Color.black;
         isReady = !isReady;
-        ((Client)GameManager.Instance.Managers[Managers.Client]).SendData((int)Events.Room, (int)RoomTypes.Ready, isReady.ToString());;
+        ((Client)GameManager.Instance.Managers[Managers.Client]).SendData((int)Events.Room, (int)RoomTypes.Ready, isReady.ToString()); ;
 
     }
     public void OnPlayBtn()
@@ -97,16 +102,18 @@ public class RoomManager : MonoBehaviour, IManager
         peopleText.text = $"{currentPeople}/{maxPeople}";
         if (currentPeople == maxPeople)
         {
-            startBtn.interactable = true;
+            startBtn.gameObject.SetActive(true);
+
         }
         else if (currentPeople < maxPeople)
         {
-            startBtn.interactable = false;
+            startBtn.gameObject.SetActive(false);
+
         }
     }
-    public void OnApplicationQuit() 
+    public void OnApplicationQuit()
     {
 
-    }  
+    }
 
 }

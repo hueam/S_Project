@@ -7,6 +7,7 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
+    public string roomID;
     private static GameManager instance;
     public static GameManager Instance {get{
         if(instance == null)
@@ -62,12 +63,6 @@ public class GameManager : MonoBehaviour
     {
         StartCoroutine(LoadSceneCor(scnenNum));
         
-    }
-    private void Update() {
-        if(Input.GetKeyDown(KeyCode.T))
-        {
-            WinPoint++;
-        }
     }
     private IEnumerator LoadSceneCor(int sceneNum)
     {

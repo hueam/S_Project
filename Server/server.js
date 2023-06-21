@@ -25,7 +25,7 @@ io.on("connection", (socket) => {
     });
     socket.on('disconnect', function () {
         console.log("한명나감");
-        Room.Exit();
+        Room.Exit(socket);
     });
 });
 server.listen(3000, () => {
