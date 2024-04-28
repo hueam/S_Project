@@ -3,7 +3,7 @@
 ## Sokect.io를 이용해서 만든 멀티플레이어 FPS입니다.
 ##들어가기전 주의사항!
 ### 이 프로젝트는 로컬 네트워크에서만 가능합니다!
-![image](https://github.com/hueam/S_Project/assets/72968569/901aa5e7-c3f3-48f9-a83c-45137e8e642f)
+![Untitled](https://prod-files-secure.s3.us-west-2.amazonaws.com/b5e5e7a4-917b-4282-8a2c-eafdf84383a3/45712a34-72d3-494c-a266-1395829c3d1d/Untitled.png)
 ## 사용법!
 1. 서버열기
    1. 다운받는다
