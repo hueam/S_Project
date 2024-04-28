@@ -5,6 +5,7 @@ using SocketIOClient;
 using System;
 using UnityEngine.Events;
 using Core;
+using System.Net;
 
 public class Client : MonoBehaviour, IManager
 {
@@ -13,7 +14,6 @@ public class Client : MonoBehaviour, IManager
     [Header("유니티 이벤트")]
     public UnityEvent ErrorEvent = null;
 
-    [SerializeField]string URL;
     [SerializeField]int port;
     [SerializeField]private bool IsConnect;
 
@@ -21,11 +21,14 @@ public class Client : MonoBehaviour, IManager
     private Queue<Action> buffer = new Queue<Action>();
     private Dictionary<string, OtherPlayer> players = new Dictionary<string,OtherPlayer>();
     public event Action alwayEvnet = null;
-    async void JoinServer()
+    public async void JoinServer()
     {
         if(socket != null) return;
         
-            socket = new SocketIO($"{URL}:{port}");
+        try
+        {
+            socket = new SocketIO($"http://{IPAddress.Parse(IPInput.IP).ToString()}:{port}");
+
             socket.OnError += (sender, e) =>
             {
                 Debug.LogError("Socket.IO error: " + e);
@@ -136,8 +139,7 @@ public class Client : MonoBehaviour, IManager
                 buffer.Enqueue(()=>((UIManager)GameManager.Instance.Managers[Managers.UIManager]).ShowMessage(data.GetValue().ToString()));
             });
             await socket.ConnectAsync();
-        try
-        {
+
             if (IsConnect == false)
             {
                 ((UIManager)GameManager.Instance.Managers[Managers.UIManager]).ShowMessage("서버 접속 실패!");
@@ -151,6 +153,8 @@ public class Client : MonoBehaviour, IManager
             ErrorEvent?.Invoke();
             socket = null;
         }
+
+        ((IntroManager)GameManager.Instance.SceneController).NextGate();
         StartCoroutine(SendMessage());
     }
     private IEnumerator SendMessage()
